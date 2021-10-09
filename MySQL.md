@@ -11,3 +11,5 @@ Redis , MongoDB , ...
 ![image](https://user-images.githubusercontent.com/75358006/135716940-37312a55-13a5-42d0-a1fd-0597517c1809.png)
 
 ![image](https://user-images.githubusercontent.com/75358006/135768552-e89fcebf-1809-4fde-96f8-6a5c413e9a96.png)
+
+4.新建一个数据库school
