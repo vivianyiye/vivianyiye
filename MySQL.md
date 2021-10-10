@@ -12,15 +12,18 @@ Redis , MongoDB , ...
 
 ![image](https://user-images.githubusercontent.com/75358006/135768552-e89fcebf-1809-4fde-96f8-6a5c413e9a96.png)
 
-4.新建一个数据库school
 
+几个基本的数据库操作命令 :
 ```
-连接数据库语句 : mysql -h 服务器主机地址 -u 用户名 -p 用户密码  -- 连接数据库
-update user set password=password('123456')where user='root'; -- 修改密码
+连接数据库语句 : mysql -h 服务器主机地址 -u 用户名 -p 用户密码   连接数据库
+
+update user set password=password('123456')where user='root';  修改密码
+
 flush privileges; -- 刷新数据库
 -------------------
 -- 所有的语句都用分号结尾
-show databases; == 显示所有数据库
+
+show databases;  显示所有数据库
 
 use dbname；打开某个数据库
 
