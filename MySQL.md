@@ -44,15 +44,20 @@ exit; 退出Mysql
 # 2 操作数据库
 数据库 > 表 > 表中数据
 
-<font color=FF0000> mySQL关键字不区分大小写 </font>
+<font color="red"> MySQL关键字不区分大小写 </font>
 
-### 2.1 操作数据库
+### 2.1 操作数据库（能看懂、了解就好）
 
-1.创建
+1.创建: create database [if not exists] 数据库名;
 
-2.删除
+2.删除: drop database [if exists] 数据库名;
 
-3.使用
+3.使用: use 数据库名;
+```
+如果表名或者字段名有特殊字符，就需要`school`
+```
+
+4.查看: show databases;
 
 
 
