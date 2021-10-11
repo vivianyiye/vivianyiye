@@ -86,22 +86,16 @@ exit; 退出Mysql
 
 ### 2.3 数据字段属性
 
-### 2.3 数据字段属性
-
 UnSigned
 
 - 无符号的
 
 - 声明该数据列不允许负数 
 
-
-
 **ZEROFILL**
 
 - 0填充的
 - 不足位数的用0来填充 , 如int(3),5则为005
-
-
 
 **Auto_InCrement**
 
@@ -114,22 +108,16 @@ UnSigned
 - - 当前表设置步长(AUTO_INCREMENT=100) : 只影响当前表
   - SET @@auto_increment_increment=5 ; 影响所有使用自增的表(全局)
 
-
-
 **NULL 和 NOT NULL**
 
 - 默认为NULL , 即没有插入该列的数值
 - 如果设置为NOT NULL , 则该列必须有值
-
-
 
 **DEFAULT**
 
 - 默认的
 - 用于设置默认值
 - 例如,性别字段,默认为"男" , 否则为 "女" ; 若无指定该列的值 , 则默认值为"男"的值
-
-
 
 拓展
 
@@ -140,6 +128,51 @@ UnSigned
 3. is_delete 伪删除
 4. gmt_create 创建时间
 5. gmt_update 修改时间
+
+### 2.4 创建数据库表（重点）
+
+```
+-- 目标 : 创建一个school数据库
+-- 创建学生表(列,字段)
+-- 学号int 登录密码varchar(20) 姓名,性别varchar(2),出生日期(datatime),家庭住址,email
+
+-- 创建表之前 , 一定要先选择数据库
+-- 字符串使用单引号括起来
+-- 所有语句后加英文逗号，最后一个不用加
+
+CREATE TABLE IF NOT EXISTS `student` (
+`id` int(4) NOT NULL AUTO_INCREMENT COMMENT '学号',
+`name` varchar(30) NOT NULL DEFAULT '匿名' COMMENT '姓名',
+`pwd` varchar(20) NOT NULL DEFAULT '123456' COMMENT '密码',
+`sex` varchar(2) NOT NULL DEFAULT '男' COMMENT '性别',
+`birthday` datetime DEFAULT NULL COMMENT '生日',
+`address` varchar(100) DEFAULT NULL COMMENT '地址',
+`email` varchar(50) DEFAULT NULL COMMENT '邮箱',
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+```
+
+格式
+
+```
+CREATE TABLE [IF NOT EXISTS] '表名'(
+   '字段名' 列类型 [属性] [索引] [注释],
+   ...
+   '字段名' 列类型 [属性] [索引] [注释]
+)[表类型][字符集类型][注释]
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
