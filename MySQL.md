@@ -62,6 +62,40 @@ exit; 退出Mysql
 
 4.查看: show databases;
 
+### 2.2 数据值和列类型
+
+```
+数值类型
+```
+![image](https://user-images.githubusercontent.com/75358006/136737755-4500d236-2abe-4479-a537-3259cb8a3b61.png)
+
+```
+字符串
+```
+![image](https://user-images.githubusercontent.com/75358006/136737904-1bcb504e-e914-4c7e-bbaf-e28dd952fa5f.png)
+
+```
+时间日期
+```
+![image](https://user-images.githubusercontent.com/75358006/136738071-64f1a92a-d139-4d23-adee-184c1d225c28.png)
+
+
+理解为 "没有值" 或 "未知值"
+
+不要用NULL进行算术运算 , 结果仍为NULL
+
+### 2.3 数据字段属性
+
+UnSigned
+
+无符号的
+
+声明该数据列不允许负数 .
+
+
+
+
+
 
 
 
