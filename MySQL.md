@@ -224,6 +224,147 @@ CHARSET=utf8
 character-set-server=utf8
 ```
 
+### 2.6 修改删除表
+
+> 修改（ALTER）
+
+```sql
+修改表名 : ALTER TABLE 旧表名 RENAME AS 新表名
+
+添加字段 : ALTER TABLE 表名 ADD 字段名 列属性[属性]
+
+修改字段（重命名，修改约束） :
+
+- ALTER TABLE 表名 MODIFY 字段名 列类型[属性]  -- 修改约束
+- ALTER TABLE 表名 CHANGE 旧字段名 新字段名 列类型[属性]  -- 字段重命名
+
+删除字段 :  ALTER TABLE 表名 DROP 字段名
+```
+
+
+
+> 删除（DELETE）
+
+DROP TABLE [IF EXISTS] 表名
+
+- IF EXISTS为可选 , 判断是否存在该数据表
+- 如删除不存在的数据表会抛出错误
+
+
+
+**所有的创建和删除操作尽量加上判断，以免报错**
+
+
+
+注意点：
+
+```
+1. 可用反引号（`）为标识符（库名、表名、字段名、索引、别名）包裹，以避免与关键字重名！中文也可以作为标识符！
+
+2. 每个库目录存在一个保存当前数据库的选项文件db.opt。
+
+3. 注释：
+  多行注释 /* 注释内容 */
+  单行注释 -- 注释内容       (标准SQL注释风格，要求双破折号后加一空格符（空格、TAB、换行等）)
+   
+4. 模式通配符：
+  _   任意单个字符
+  %   任意多个字符，甚至包括零字符
+  单引号需要进行转义 \'
+   
+5. CMD命令行内的语句结束符可以为 ";", "\G", "\g"，仅影响显示结果。其他地方还是用分号结束。delimiter 可修改当前对话的语句结束符。
+
+6. SQL对大小写不敏感 （关键字），建议小写
+
+7. 清除已有语句：\c
+```
+
+
+
+## 3 MySQL数据管理
+
+### 3.1 外键（了解即可）
+
+> 创建外键
+
+建表时指定外键约束
+
+```sql
+-- 创建外键的方式一 : 创建子表同时创建外键
+-- 学生表的gradeid字段，要去引用年级表的gradeid
+-- 1.定义外键key
+-- 2.给这个外键添加约束（执行引用）references
+
+-- 年级表 (id\年级名称)
+CREATE TABLE `grade` (
+`gradeid` INT(10) NOT NULL AUTO_INCREMENT COMMENT '年级ID',
+`gradename` VARCHAR(50) NOT NULL COMMENT '年级名称',
+PRIMARY KEY (`gradeid`)
+) ...
+
+-- 学生信息表 (学号,姓名,性别,年级,手机,地址,出生日期,邮箱,身份证号)
+CREATE TABLE `student` (
+`studentno` INT(4) NOT NULL COMMENT '学号',
+...
+`gradeid` INT(10) DEFAULT NULL COMMENT '年级',
+...
+PRIMARY KEY (`studentno`),
+KEY `FK_gradeid` (`gradeid`),
+CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade` (`gradeid`)
+) ...
+```
+
+建表后修改
+
+```sql
+-- 创建外键方式二 : 创建子表完毕后,修改子表添加外键创建表的时候没有外键关系
+ALTER TABLE `student`
+ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade` (`gradeid`);
+```
+
+**结论**
+
+- 以上操作都是物理外键，数据库级别的外键，不建议使用（避免数据库过多造成困扰，了解即可）
+- 如果想使用多张表的数据和外键，交给程序去实现
+
+### 3.2 DML语言（全部记住）
+
+
+
+
+
+
+
+### 3.3 添加
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
