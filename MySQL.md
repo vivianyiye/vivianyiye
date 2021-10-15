@@ -329,13 +329,88 @@ ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade` (`gradeid
 
 ### 3.2 DML语言（全部记住）
 
+**数据库意义** ： 数据存储、数据管理
+
+- - INSERT (添加数据语句)
+  - UPDATE (更新数据语句)
+  - DELETE (删除数据语句)
 
 
 
+### 3.3 添加（insert）
+
+```sql
+-- 基本语法 : INSERT INTO 表名[(字段1,字段2,字段3,...)] VALUES('值1','值2','值3')
+INSERT INTO grade(gradename) VALUES ('大一');
+
+-- 主键自增,可以省略主键
+INSERT INTO grade VALUES ('大二');
+
+-- 主键不自增，不可以省略
+查询：INSERT INTO grade VALUE ('大二')
+错误：Column count doesn`t match value count at row 1
+
+-- 结论：'字段1,字段2...'该部分可省略 , 但添加的值务必与表结构,数据列,顺序相对应,且数量一致.
+
+-- 一次插入多条数据
+INSERT INTO grade(gradename) VALUES ('大三'),('大四');
+```
 
 
 
-### 3.3 添加
+### 3.4 修改（update）
+
+```sql
+-- 基本语法：UPDATE 表名 SET column_name=value [,column_name2=value2,...] [WHERE condition];
+UPDATE grade SET gradename = '高中' WHERE gradeid = 1;
+
+-- 不指定的条件下，会改动所有的表！
+UPDATE grade SET gradename = '高中';
+
+-- 修改多个属性，用逗号隔开
+UPDATE grade SET gradename = '高中', email = '12333@qq.com' WHERE gradeid = 1;
+
+-- 函数值
+UPDATE grade SET birthday = CURRENT_TIME WHERE name = 'yiye';
+```
+
+WHERE子句判断符
+
+![图片](https://mmbiz.qpic.cn/mmbiz_png/uJDAUKrGC7LCI6xGKJ7bKiaBudOSBHd9dyJWPxp3H9GicphPXMEvCwtUyKX3vibUCESqSaDnKnLzlwYpcRTJsdUIg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+### 3.5 删除（delete）
+
+```sql
+-- 基本语法：DELETE FROM 表名 [WHERE condition];
+
+-- 删除最后一个数据
+DELETE FROM grade WHERE gradeid = 5
+
+-- 基本语法：TRUNCATE [TABLE] table_name;
+
+-- 清空年级表
+TRUNCATE grade
+```
+
+**注意：delete和truncate区别**
+
+- 相同 : 都能删除数据 , 不删除表结构 , 但TRUNCATE速度更快
+
+- 不同 :
+
+- - 使用TRUNCATE TABLE 重新设置AUTO_INCREMENT计数器，自增列归零
+  - 使用TRUNCATE TABLE不会对事务有影响 （事务后面会说）
+
+```sql
+-- 结论:
+-- truncate删除数据,自增当前值会恢复到初始值重新开始;不会记录日志.
+
+-- 同样使用DELETE清空不同引擎的数据库表数据.重启数据库服务后
+-- InnoDB : 自增列从初始值重新开始 (存储在内存中,断电即失)
+-- MyISAM : 自增列依然从上一个自增数据基础上开始 (存在文件中,不会丢失)
+```
+
+
 
 
 
