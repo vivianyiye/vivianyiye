@@ -1130,6 +1130,262 @@ MD5即Message-Digest Algorithm 5（信息-摘要算法5），用于确保信息�
 ![image](https://user-images.githubusercontent.com/75358006/138011894-2b638c36-ea79-4db1-ac60-097f55140b39.png)
 
 
+# 6 事务
+
+### 6.1 什么是事务
+
+- 要么都成功，要么都失败
+
+- 将一组SQL放在一个批次中执行
+
+> 事务原则：ACID原则，即原子性，一致性，隔离性，持久性 （脏读，幻读）
+
+**原子性(Atomic)**
+
+- 整个事务中的所有操作，要么全部完成，要么全部不完成，不可能停滞在中间某个环节。事务在执行过程中发生错误，会被回滚（ROLLBACK）到事务开始前的状态，就像这个事务从来没有执行过一样。
+
+**一致性(Consist)**
+
+- 事务前后的数据完整性必须始终保持处于一致的状态，不管在任何给定的时间并发事务有多少。也就是说：如果事务是并发多个，系统也必须如同串行事务一样操作。
+
+**持久性(Durable)** -- 事务提交
+
+- 事务一旦提交则不可逆，被持久化到数据库中
+
+**隔离性(Isolated)**
+
+- 多个用户并发访问数据库时，数据库为每一个用户开启的事务，不能被其他事务的操作数据所干扰
+
+
+
+> 隔离所导致的一些问题
+
+脏读：指一个事务读取了另外一个事务未提交的数据
+
+不可重复读：在一个事务内多次读取的数据结果不同
+
+虚度（幻读）：在一个事务内读取到了别的事务插入的数据，导致前后读取不一致
+
+> 事务
+
+```sql
+-- 注意:
+--- 1.MySQL中默认是自动提交
+--- 2.使用事务时应先关闭自动提交
+
+-- 手动处理事务：使用set语句来改变自动提交模式
+SET autocommit = 0;   /*关闭*/
+SET autocommit = 1;   /*开启*/
+
+-- 事务开启,标记事务的起始点,一组事务
+START TRANSACTION  
+
+-- 提交一个事务给数据库：持久化（成功！）
+COMMIT
+
+-- 将事务回滚,数据回到本次事务的初始状态（失败！）
+ROLLBACK
+
+-- 事务结束,还原MySQL数据库的自动提交
+SET autocommit =1;
+
+-- 存档
+SAVEPOINT 保存点名称 -- 设置一个事务保存点
+ROLLBACK TO SAVEPOINT 保存点名称 -- 回滚到保存点
+RELEASE SAVEPOINT 保存点名称 -- 删除保存点
+```
+
+> 测试
+
+```sql
+/*
+课堂测试题目
+
+A在线买一款价格为500元商品,网上银行转账.
+A的银行卡余额为2000,然后给商家B支付500.
+商家B一开始的银行卡余额为10000
+
+创建数据库shop和创建表account并插入2条数据
+*/
+
+CREATE DATABASE `shop`
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `shop`;
+
+CREATE TABLE `account` (
+`id` INT(11) NOT NULL AUTO_INCREMENT,
+`name` VARCHAR(32) NOT NULL,
+`cash` DECIMAL(9,2) NOT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8
+
+INSERT INTO account (`name`,`cash`)
+VALUES('A',2000.00),('B',10000.00)
+
+-- 转账实现
+SET autocommit = 0; -- 关闭自动提交
+START TRANSACTION;  -- 开始一个事务,标记事务的起始点
+UPDATE account SET cash=cash-500 WHERE `name`='A';
+UPDATE account SET cash=cash+500 WHERE `name`='B';
+COMMIT; -- 提交事务
+# rollback;
+SET autocommit = 1; -- 恢复自动提交
+```
+
+
+
+# 7 索引
+
+https://blog.codinglabs.org/articles/theory-of-mysql-index.html MySQL索引背后的数据结构及算法原理
+
+> MySQL官方对索引的定义为：索引（Index）是帮助MySQL高效获取数据的数据结构。
+>
+> 提取句子主干，就可以得到索引的本质：索引是数据结构。
+
+### 7.1 索引的分类
+
+> 在一个表中，主键索引只能有一个，唯一索引可以有多个
+
+- 主键索引 (Primary Key)
+  - 唯一的标识，主键不可重复且唯一
+- 唯一索引 (Unique)
+  - 避免重复的列出现（保证唯一性），但其实可以重复，多个列都可以标识为唯一索引
+- 常规索引 (Index/Key)
+- 全文索引 (FullText)
+  - 在特定数据库引擎下才有，MYISAM
+  - 快速定位数据
+
+```sql
+/* 索引的使用
+#方法一：创建表时
+  　　CREATE TABLE 表名 (
+               字段名1 数据类型 [完整性约束条件…],
+               字段名2 数据类型 [完整性约束条件…],
+               [UNIQUE | FULLTEXT | SPATIAL ]   INDEX | KEY
+               [索引名] (字段名[(长度)] [ASC |DESC])
+               );
+
+
+#方法二：CREATE在已存在的表上创建索引
+       CREATE [UNIQUE | FULLTEXT | SPATIAL ] INDEX 索引名
+                    ON 表名 (字段名[(长度)] [ASC |DESC]) ;
+
+
+#方法三：ALTER TABLE在已存在的表上创建索引
+       ALTER TABLE 表名 ADD [UNIQUE | FULLTEXT | SPATIAL ] INDEX
+                            索引名 (字段名[(长度)] [ASC |DESC]) ;
+                           
+                           
+#删除索引：DROP INDEX 索引名 ON 表名字;
+#删除主键索引: ALTER TABLE 表名 DROP PRIMARY KEY;
+
+*/
+/*显示索引信息*/
+SHOW INDEX FROM student;
+
+/*增加全文索引*/
+ALTER TABLE `school`.`student` ADD FULLTEXT INDEX `studentname` (`StudentName`);
+
+/*EXPLAIN : 分析SQL语句执行性能*/
+/*非全文索引*/
+EXPLAIN SELECT * FROM student WHERE studentno='1000';
+
+/*使用全文索引*/
+-- 全文搜索通过 MATCH() 函数完成。
+-- 搜索字符串作为 against() 的参数被给定。搜索以忽略字母大小写的方式执行。对于表中的每个记录行，MATCH() 返回一个相关性值。即，在搜索字符串与记录行在 MATCH() 列表中指定的列的文本之间的相似性尺度。
+EXPLAIN SELECT *FROM student WHERE MATCH(studentname) AGAINST('love');
+
+/*
+开始之前，先说一下全文索引的版本、存储引擎、数据类型的支持情况
+
+MySQL 5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引；
+MySQL 5.6 及以后的版本，MyISAM 和 InnoDB 存储引擎均支持全文索引;
+只有字段的数据类型为 char、varchar、text 及其系列才可以建全文索引。
+测试或使用全文索引时，要先看一下自己的 MySQL 版本、存储引擎和数据类型是否支持全文索引。
+*/
+```
+
+> 拓展：测试索引
+
+**建表app_user：**
+
+```sql
+CREATE TABLE `app_user` (
+`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+`name` varchar(50) DEFAULT '' COMMENT '用户昵称',
+`email` varchar(50) NOT NULL COMMENT '用户邮箱',
+`phone` varchar(20) DEFAULT '' COMMENT '手机号',
+`gender` tinyint(4) unsigned DEFAULT '0' COMMENT '性别（0:男；1：女）',
+`password` varchar(100) NOT NULL COMMENT '密码',
+`age` tinyint(4) DEFAULT '0' COMMENT '年龄',
+`create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+`update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='app用户表'
+```
+
+**批量插入数据：100w**
+
+```sql
+DROP FUNCTION IF EXISTS mock_data;
+DELIMITER $$ -- 写函数之前必须要写，标志
+CREATE FUNCTION mock_data() -- 模拟数据
+RETURNS INT -- 返回值类型
+
+BEGIN
+    DECLARE num INT DEFAULT 1000000;
+    DECLARE i INT DEFAULT 0;
+    WHILE i < num DO
+      INSERT INTO app_user(`name`, `email`, `phone`, `gender`, `password`, `age`)
+       VALUES(CONCAT('用户', i), '24736743@qq.com', CONCAT('18', FLOOR(RAND()*(999999999-100000000)+100000000)),FLOOR(RAND()*2),UUID(), FLOOR(RAND()*100));
+      SET i = i + 1;
+    END WHILE;
+    RETURN i;
+END;
+
+SELECT mock_data();
+```
+
+**索引效率测试**
+
+```sql
+-- 无索引
+SELECT * FROM app_user WHERE name = '用户9999'; -- 查看耗时
+SELECT * FROM app_user WHERE name = '用户9999';
+SELECT * FROM app_user WHERE name = '用户9999';
+
+EXPLAIN SELECT * FROM app_user WHERE name = '用户9999'; -- 约1s
+
+-- 创建索引
+CREATE INDEX idx_app_user_name ON app_user(name);
+
+-- 测试普通索引
+EXPLAIN SELECT * FROM app_user WHERE name = '用户9999'; -- 约0.001s
+```
+
+索引在小数据量的时候影响不大，但是在大数据量的时候影响比较大
+
+### 7.3 索引原则
+
+> 索引准则
+
+- 索引不是越多越好
+- 不要对经常变动的数据加索引
+- 小数据量的表建议不要加索引
+- 索引一般应加在查找条件的字段
+
+> 索引的数据结构
+
+```sql
+-- 我们可以在创建上述索引的时候，为其指定索引类型，分两类
+hash类型的索引：查询单条快，范围查询慢
+btree类型的索引：b+树，层数越多，数据量指数级增长（我们就用它，因为innodb默认支持它）
+
+-- 不同的存储引擎支持的索引类型也不一样
+InnoDB 支持事务，支持行级别锁定，支持 B-tree、Full-text 等索引，不支持 Hash 索引；
+MyISAM 不支持事务，支持表级别锁定，支持 B-tree、Full-text 等索引，不支持 Hash 索引；
+```
+
 
 
 
