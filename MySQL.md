@@ -1386,7 +1386,214 @@ InnoDB 支持事务，支持行级别锁定，支持 B-tree、Full-text 等索�
 MyISAM 不支持事务，支持表级别锁定，支持 B-tree、Full-text 等索引，不支持 Hash 索引；
 ```
 
+# 8 权限管理和备份
 
+### 8.1 用户管理
+
+> 使用SQLyog 创建用户，并授予权限演示
+
+![image-20211021143952131](C:\Users\vivianye7\AppData\Roaming\Typora\typora-user-images\image-20211021143952131.png)
+
+> 基本命令
+
+本质：读这张表进行增删改查
+
+```sql
+/* 用户和权限管理 */ ------------------
+用户信息表：mysql.user
+
+-- 刷新权限
+FLUSH PRIVILEGES
+
+-- 增加用户 CREATE USER kuangshen IDENTIFIED BY '123456'
+CREATE USER 用户名 IDENTIFIED BY [PASSWORD] 密码(字符串)
+  - 必须拥有mysql数据库的全局CREATE USER权限，或拥有INSERT权限。
+  - 只能创建用户，不能赋予权限。
+  - 用户名，注意引号：如 'user_name'@'192.168.1.1'
+  - 密码也需引号，纯数字密码也要加引号
+  - 要在纯文本中指定密码，需忽略PASSWORD关键词。要把密码指定为由PASSWORD()函数返回的混编值，需包含关键字PASSWORD
+
+-- 重命名用户 RENAME USER kuangshen TO kuangshen2
+RENAME USER old_user TO new_user
+
+-- 设置/修改密码
+SET PASSWORD = PASSWORD('密码')    -- 为当前用户设置密码
+SET PASSWORD FOR 用户名 = PASSWORD('密码')    -- 为指定用户设置密码
+
+-- 删除用户 DROP USER kuangshen2
+DROP USER 用户名
+
+-- 分配权限/添加用户
+GRANT 权限列表 ON 表名 TO 用户名 [IDENTIFIED BY [PASSWORD] 'password']
+  - all privileges 表示所有权限，除了给别人授权grant
+  - *.* 表示所有库的所有表
+  - 库名.表名 表示某库下面的某表
+
+-- 查看权限   SHOW GRANTS FOR root@localhost;
+SHOW GRANTS FOR 用户名
+-- 查看当前用户权限
+SHOW GRANTS; 
+SHOW GRANTS FOR CURRENT_USER; 
+SHOW GRANTS FOR CURRENT_USER();
+
+-- 撤消权限
+REVOKE 权限列表 ON 表名 FROM 用户名
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 用户名    -- 撤销所有权限
+```
+
+### 8.2 MySQL备份
+
+数据库备份必要性：
+
+- 保证重要数据不丢失
+- 数据转移
+
+MySQL数据库备份方法
+
+- 直接拷贝数据库文件和相关配置文件
+- 数据库管理工具,如SQLyog
+  - 在想要导出的表或者库中，右键选择备份或导出
+
+![image-20211022141348664](C:\Users\vivianye7\AppData\Roaming\Typora\typora-user-images\image-20211022141348664.png)
+
+- 使用命令行mysqldump备份工具
+
+![图片](https://mmbiz.qpic.cn/mmbiz_png/uJDAUKrGC7Jf7deolwQa44rXvicIhXZ0NzgWJWeyYYcf1Dy3ibfN66SiaZQmqTF3Hv8HBjr1zIowXh201pEjUzyJw/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+```sql
+-- 导出
+1. 导出一张表 -- mysqldump -uroot -p123456 school student >D:/a.sql
+　　mysqldump -u用户名 -p密码 库名 表名 > 文件名(D:/a.sql)
+2. 导出多张表 -- mysqldump -uroot -p123456 school student result >D:/a.sql
+　　mysqldump -u用户名 -p密码 库名 表1 表2 表3 > 文件名(D:/a.sql)
+3. 导出所有表 -- mysqldump -uroot -p123456 school >D:/a.sql
+　　mysqldump -u用户名 -p密码 库名 > 文件名(D:/a.sql)
+4. 导出一个库 -- mysqldump -uroot -p123456 -B school >D:/a.sql
+　　mysqldump -u用户名 -p密码 -B 库名 > 文件名(D:/a.sql)
+
+可以-w携带备份条件
+
+-- 导入
+1. 在登录mysql的情况下，先切换到数据库的表：-- source D:/a.sql
+　　source 备份文件地址
+2. 在不登录的情况下
+　　mysql -u用户名 -p密码 库名 < 备份文件
+```
+
+假设你要备份数据库，防止数据丢失
+
+**mysqldump客户端**
+
+作用 :
+
+- 转储数据库
+- 搜集数据库进行备份
+- 将数据转移到另一个SQL服务器,不一定是MySQL服务器
+
+
+
+# 9 规范数据库设计
+
+### 9.1 为什么需要设计
+
+> **当数据库比较复杂时我们需要设计数据库**
+
+**糟糕的数据库设计 :** 
+
+- 数据冗余,存储空间浪费
+- 数据更新和插入的麻烦、异常（屏蔽使用物理外键）
+- 程序性能差
+
+**良好的数据库设计 :** 
+
+- 节省数据的存储空间
+- 能够保证数据的完整性
+- 方便进行数据库应用系统的开发
+- 
+
+> **软件项目开发周期中数据库设计 :**
+
+- 需求分析阶段: 分析客户的业务和数据处理需求
+- 概要设计阶段:设计数据库的E-R模型图 , 确认需求信息的正确和完整.
+
+
+
+> **设计数据库步骤（个人博客）**
+
+- 收集信息，分析需求
+
+  - 用户表（用户登录注销，用户的个人信息，写博客，创建分类）
+  - 分类表（文章分类，谁创建的）
+  - 文章表（文章信息）
+  - 评论表（）
+  - 友情链接表（友链信息）
+  - 自定义表（系统信息，某个关键的字，一些主题）key: value
+
+- - 与该系统有关人员进行交流 , 座谈 , 充分了解用户需求 , 理解数据库需要完成的任务.
+
+- 标识实体[Entity] （把需求落地到每个字段）
+
+- 
+
+- - 标识数据库要管理的关键对象或实体,实体一般是名词
+
+- 标识每个实体需要存储的详细信息[Attribute]
+
+- 标识实体之间的关系[Relationship]
+
+  - 写博客：user -> blog
+  - 创建分类：user -> category
+  - 关注：user -> user
+  - 友链：link
+  - 评论：user->user->blog
+
+# 9.2 三大范式
+
+**问题 : 为什么需要数据规范化?**
+
+不合规范的表设计会导致的问题：
+
+- 信息重复
+
+- 更新异常
+
+- 插入异常
+
+- - 无法正确表示信息
+
+- 删除异常
+
+- - 丢失有效信息
+
+> 三大范式
+
+**第一范式 (1st NF)**
+
+原子性：如果每列都是不可再分的最小数据单元,则满足第一范式
+
+**第二范式(2nd NF)**
+
+前提：满足第一范式（1NF）
+
+完全依赖：第二范式要求每个表只描述一件事情
+
+**第三范式(3rd NF)**
+
+前提：满足第一范式和第二范式
+
+如果一个关系满足第二范式,并且除了主键以外的其他列都不传递依赖于主键列,则满足第三范式.
+
+直接依赖：第三范式需要确保数据表中的每一列数据都和主键直接相关，而不能间接相关。
+
+> **规范化和性能的关系**
+
+- 为满足商业化的目标和需求 , 数据库性能比规范化数据库更重要
+
+- 在数据规范化的同时 , 要综合考虑数据库的性能
+
+- 故意给某些表添加冗余的字段,以大量减少需要从中搜索信息所需的时间（多表查询 -> 单表查询）
+
+- 故意插入一些计算列,以方便查询（大数据量 -> 小数据量：索引）
 
 
 
